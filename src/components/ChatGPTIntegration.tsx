@@ -180,41 +180,43 @@ export function ChatGPTIntegration() {
       )}
 
       {/* Input Area */}
-      <div className="p-6 border-t border-border">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-end space-x-3">
-            <div className="flex-1 relative">
-              <Input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Ask me any math question..."
-                className="pr-20 min-h-[44px] py-3"
-                disabled={isLoading}
-                maxLength={4000}
-              />
-              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-1">
-                <Button variant="ghost" size="icon" className="w-8 h-8">
-                  <Paperclip className="w-4 h-4" />
-                </Button>
-                <Button 
-                  onClick={handleSendMessage}
-                  disabled={!inputValue.trim() || isLoading}
-                  size="icon" 
-                  className="w-8 h-8"
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
+      <div className="border-t border-border">
+        <div className="p-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-end space-x-3">
+              <div className="flex-1 relative">
+                <Input
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Ask me any math question..."
+                  className="pr-20 min-h-[44px] py-3"
+                  disabled={isLoading}
+                  maxLength={4000}
+                />
+                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-1">
+                  <Button variant="ghost" size="icon" className="w-8 h-8">
+                    <Paperclip className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    onClick={handleSendMessage}
+                    disabled={!inputValue.trim() || isLoading}
+                    size="icon" 
+                    className="w-8 h-8"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
+              <Button variant="ghost" size="icon" className="w-10 h-10">
+                <Mic className="w-4 h-4" />
+              </Button>
             </div>
-            <Button variant="ghost" size="icon" className="w-10 h-10">
-              <Mic className="w-4 h-4" />
-            </Button>
+            
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              MathGPT can make mistakes. Check important info.
+            </p>
           </div>
-          
-          <p className="text-xs text-muted-foreground text-center mt-2">
-            MathGPT can make mistakes. Check important info.
-          </p>
         </div>
       </div>
     </div>
