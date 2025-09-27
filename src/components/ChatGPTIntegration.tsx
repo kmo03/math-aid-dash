@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Search, Users, TrendingUp, Zap } from "lucide-react";
+import { Send, Mic, Paperclip } from "lucide-react";
 import { MathRenderer } from "./MathRenderer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -102,74 +102,39 @@ export function ChatGPTIntegration() {
   };
 
   const getWelcomePrompts = () => [
-    {
-      text: "Looking for the most relevant answers?",
-      subtext: "Get precise help with your specific math problems",
-      icon: Search,
-      prompt: "Help me understand this math concept step by step"
-    },
-    {
-      text: "Too much data to analyze?", 
-      subtext: "Break down complex problems into manageable parts",
-      icon: TrendingUp,
-      prompt: "Help me organize and solve this complex math problem"
-    },
-    {
-      text: "Need the latest info?",
-      subtext: "Get current methods and best practices",
-      icon: Zap,
-      prompt: "What's the best approach to solve this type of problem?"
-    },
-    {
-      text: "Want everything connected?",
-      subtext: "See how different math concepts relate",
-      icon: Users,
-      prompt: "How does this concept connect to other areas of math?"
-    }
+    "Help me solve x² + 5x - 6 = 0",
+    "Explain derivatives in calculus",
+    "Help with triangle proofs", 
+    "Explain probability concepts"
   ];
 
   return (
     <div className="flex-1 flex flex-col">
       {/* Welcome message when no chats */}
       {messages.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center px-6">
-          <div className="w-full max-w-4xl mx-auto">
-            <div className="text-center mb-16">
-              <h1 className="text-5xl font-semibold text-foreground mb-4">
-                Hello, Marc
-              </h1>
-              <p className="text-2xl text-muted-foreground">
-                Find What Matters, Faster.
-              </p>
-            </div>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center max-w-md">
+            <h1 className="text-2xl font-semibold text-foreground mb-2">
+              What's on the agenda today?
+            </h1>
+            <p className="text-muted-foreground mb-6">
+              I'm here to help you with your math homework. Ask me about algebra, calculus, geometry, or any other math topic!
+            </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
-              {getWelcomePrompts().map((promptObj, index) => {
-                const IconComponent = promptObj.icon;
-                return (
-                  <div
-                    key={index}
-                    className="group bg-card hover:bg-gradient-card border border-border rounded-2xl p-8 cursor-pointer transition-all duration-300 hover:shadow-card hover:scale-[1.02]"
-                    onClick={() => setInputValue(promptObj.prompt)}
-                  >
-                    <div className="h-32 flex flex-col justify-between">
-                      <div>
-                        <h3 className="text-lg font-medium text-foreground mb-2">
-                          {promptObj.text}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {promptObj.subtext}
-                        </p>
-                      </div>
-                      <div className="flex justify-end">
-                        <div className="w-10 h-10 bg-accent rounded-lg flex items-center justify-center group-hover:bg-accent-foreground/10 transition-colors">
-                          <IconComponent className="w-5 h-5 text-accent-foreground" />
-                        </div>
-                      </div>
-                    </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+              {getWelcomePrompts().map((prompt, index) => (
+                <Button 
+                  key={index}
+                  variant="outline" 
+                  className="h-auto p-4 text-left justify-start"
+                  onClick={() => setInputValue(prompt)}
+                >
+                  <div>
+                    <div className="font-medium text-sm">{prompt.split(' ').slice(0, 3).join(' ')}</div>
+                    <div className="text-xs text-muted-foreground">{prompt.split(' ').slice(3).join(' ')}</div>
                   </div>
-                );
-              })}
+                </Button>
+              ))}
             </div>
           </div>
         </div>
@@ -215,31 +180,43 @@ export function ChatGPTIntegration() {
       )}
 
       {/* Input Area */}
-      <div className="px-6 pb-8">
-        <div className="max-w-2xl mx-auto">
-          <div className="relative">
-            <Input
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask me anything..."
-              className="w-full h-14 pl-6 pr-14 text-base bg-card border border-border rounded-full shadow-card focus:shadow-hover transition-shadow"
-              disabled={isLoading}
-              maxLength={4000}
-            />
-            <Button 
-              onClick={handleSendMessage}
-              disabled={!inputValue.trim() || isLoading}
-              size="icon" 
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 w-10 h-10 rounded-full bg-foreground hover:bg-foreground/90 text-background"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
+      <div className="border-t border-border">
+        <div className="p-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-end space-x-3">
+              <div className="flex-1 relative">
+                <Input
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Ask me any math question..."
+                  className="pr-20 min-h-[44px] py-3"
+                  disabled={isLoading}
+                  maxLength={4000}
+                />
+                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-1">
+                  <Button variant="ghost" size="icon" className="w-8 h-8">
+                    <Paperclip className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    onClick={handleSendMessage}
+                    disabled={!inputValue.trim() || isLoading}
+                    size="icon" 
+                    className="w-8 h-8"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+              <Button variant="ghost" size="icon" className="w-10 h-10">
+                <Mic className="w-4 h-4" />
+              </Button>
+            </div>
+            
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              MathGPT can make mistakes. Check important info.
+            </p>
           </div>
-          
-          <p className="text-xs text-muted-foreground text-center mt-3">
-            AI-generated results are based on available data and may not always be 100% accurate.
-          </p>
         </div>
       </div>
     </div>
