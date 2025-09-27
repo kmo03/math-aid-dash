@@ -1,10 +1,10 @@
 import { SimpleChatLayout } from "./SimpleChatLayout";
-import { SimpleMathChat } from "./SimpleMathChat";
+import { ChatGPTIntegration } from "./ChatGPTIntegration";
 
 export function SimpleApp() {
   return (
     <SimpleChatLayout>
-      <SimpleMathChat />
+      <ChatGPTIntegration />
     </SimpleChatLayout>
   );
 }

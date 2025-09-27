@@ -2,6 +2,17 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send, Mic, Paperclip } from "lucide-react";
+import { MathRenderer } from "./MathRenderer";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+const messageSchema = z.object({
+  message: z.string()
+    .trim()
+    .min(1, { message: "Message cannot be empty" })
+    .max(4000, { message: "Message must be less than 4000 characters" })
+});
 
 interface Message {
   id: string;
@@ -10,13 +21,22 @@ interface Message {
   timestamp: Date;
 }
 
-export function SimpleMathChat() {
+export function ChatGPTIntegration() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+    // Validate input
+    const validation = messageSchema.safeParse({ message: inputValue });
+    if (!validation.success) {
+      toast({
+        title: "Invalid message",
+        description: validation.error.issues[0].message,
+        variant: "destructive"
+      });
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -26,20 +46,52 @@ export function SimpleMathChat() {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const messageToSend = inputValue;
     setInputValue("");
     setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      console.log('Calling ChatGPT API with message:', messageToSend);
+      
+      const { data: functionData, error: functionError } = await supabase.functions.invoke('chat-gpt', {
+        body: { message: messageToSend }
+      });
+
+      if (functionError) {
+        throw new Error(functionError.message || "Failed to get AI response");
+      }
+
+      if (!functionData || !functionData.response) {
+        throw new Error("No response received from AI");
+      }
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: "I'd be happy to help you with that math problem! Let me break it down step by step for you. Could you please provide more details about the specific problem you're working on?",
+        content: functionData.response,
         sender: "ai",
         timestamp: new Date()
       };
+
       setMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('ChatGPT API error:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to get AI response. Please try again.",
+        variant: "destructive"
+      });
+      
+      // Add error message to chat
+      const errorMessage: Message = {
+        id: (Date.now() + 2).toString(),
+        content: "Sorry, I encountered an error while processing your request. Please try again.",
+        sender: "ai",
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -48,6 +100,13 @@ export function SimpleMathChat() {
       handleSendMessage();
     }
   };
+
+  const getWelcomePrompts = () => [
+    "Help me solve x² + 5x - 6 = 0",
+    "Explain derivatives in calculus",
+    "Help with triangle proofs", 
+    "Explain probability concepts"
+  ];
 
   return (
     <div className="flex-1 flex flex-col">
@@ -63,49 +122,19 @@ export function SimpleMathChat() {
             </p>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-              <Button 
-                variant="outline" 
-                className="h-auto p-4 text-left justify-start"
-                onClick={() => setInputValue("Help me solve x² + 5x - 6 = 0")}
-              >
-                <div>
-                  <div className="font-medium text-sm">Solve equation</div>
-                  <div className="text-xs text-muted-foreground">Quadratic equations</div>
-                </div>
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className="h-auto p-4 text-left justify-start"
-                onClick={() => setInputValue("Explain derivatives in calculus")}
-              >
-                <div>
-                  <div className="font-medium text-sm">Learn calculus</div>
-                  <div className="text-xs text-muted-foreground">Derivatives & limits</div>
-                </div>
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className="h-auto p-4 text-left justify-start"
-                onClick={() => setInputValue("Help with triangle proofs")}
-              >
-                <div>
-                  <div className="font-medium text-sm">Geometry proofs</div>
-                  <div className="text-xs text-muted-foreground">Triangles & angles</div>
-                </div>
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className="h-auto p-4 text-left justify-start"
-                onClick={() => setInputValue("Explain probability concepts")}
-              >
-                <div>
-                  <div className="font-medium text-sm">Statistics help</div>
-                  <div className="text-xs text-muted-foreground">Probability & data</div>
-                </div>
-              </Button>
+              {getWelcomePrompts().map((prompt, index) => (
+                <Button 
+                  key={index}
+                  variant="outline" 
+                  className="h-auto p-4 text-left justify-start"
+                  onClick={() => setInputValue(prompt)}
+                >
+                  <div>
+                    <div className="font-medium text-sm">{prompt.split(' ').slice(0, 3).join(' ')}</div>
+                    <div className="text-xs text-muted-foreground">{prompt.split(' ').slice(3).join(' ')}</div>
+                  </div>
+                </Button>
+              ))}
             </div>
           </div>
         </div>
@@ -124,7 +153,14 @@ export function SimpleMathChat() {
                     : "bg-muted text-foreground"
                 }`}
               >
-                <p className="text-sm leading-relaxed">{message.content}</p>
+                {message.sender === "ai" ? (
+                  <MathRenderer 
+                    content={message.content}
+                    className="text-sm leading-relaxed"
+                  />
+                ) : (
+                  <p className="text-sm leading-relaxed">{message.content}</p>
+                )}
               </div>
             </div>
           ))}
@@ -152,9 +188,10 @@ export function SimpleMathChat() {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask anything..."
+                placeholder="Ask me any math question..."
                 className="pr-20 min-h-[44px] py-3"
                 disabled={isLoading}
+                maxLength={4000}
               />
               <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-1">
                 <Button variant="ghost" size="icon" className="w-8 h-8">
