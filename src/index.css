@@ -132,4 +132,29 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Math rendering styles */
+  .katex-display-wrapper {
+    @apply my-4 text-center;
+  }
+
+  .katex-inline-wrapper {
+    @apply inline;
+  }
+
+  .katex-error {
+    @apply text-destructive bg-destructive/10 px-2 py-1 rounded text-sm font-mono;
+  }
+
+  .math-renderer {
+    @apply leading-relaxed;
+  }
+
+  .math-renderer .katex {
+    @apply text-foreground;
+  }
+
+  .math-renderer .katex-display .katex {
+    @apply text-center;
+  }
 }
