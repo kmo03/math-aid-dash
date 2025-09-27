@@ -30,7 +30,7 @@ export function SimpleChatLayout({ children }: SimpleChatLayoutProps) {
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
-      <div className="w-64 bg-card border-r border-border flex flex-col">
+      <div className="w-64 bg-card border-r border-border flex flex-col fixed left-0 top-0 h-screen z-10">
         {/* Header */}
         <div className="p-4 border-b border-border">
           <div className="flex items-center space-x-2 mb-4">
@@ -109,7 +109,7 @@ export function SimpleChatLayout({ children }: SimpleChatLayoutProps) {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col ml-64">
         {children}
       </div>
     </div>
