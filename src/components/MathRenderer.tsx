@@ -91,7 +91,18 @@ export function MathRenderer({ content, className }: MathRendererProps) {
           }
         );
 
-        // Convert newlines to <br> tags for better formatting
+        // Handle simple HTML formatting
+        // Bold text
+        processedContent = processedContent.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        // Italic text
+        processedContent = processedContent.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        // Headers (process before newline conversion)
+        processedContent = processedContent.replace(/### (.*?)(?=\n|$)/g, '<h3 style="font-size: 1.125rem; font-weight: 600; margin: 1rem 0 0.5rem 0;">$1</h3>');
+        processedContent = processedContent.replace(/## (.*?)(?=\n|$)/g, '<h2 style="font-size: 1.25rem; font-weight: 600; margin: 1rem 0 0.5rem 0;">$1</h2>');
+        processedContent = processedContent.replace(/# (.*?)(?=\n|$)/g, '<h1 style="font-size: 1.5rem; font-weight: 700; margin: 1rem 0 0.5rem 0;">$1</h1>');
+        
+        // Convert double newlines to paragraph breaks, single newlines to line breaks
+        processedContent = processedContent.replace(/\n\n/g, '<p style="margin: 0.75rem 0;"></p>');
         processedContent = processedContent.replace(/\n/g, '<br>');
 
         containerRef.current.innerHTML = processedContent;
@@ -108,7 +119,7 @@ export function MathRenderer({ content, className }: MathRendererProps) {
       ref={containerRef}
       className={`math-renderer ${className || ''}`}
       style={{
-        lineHeight: '1.6',
+        lineHeight: '1.5',
       }}
     />
   );

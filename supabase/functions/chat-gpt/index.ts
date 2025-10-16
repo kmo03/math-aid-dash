@@ -15,7 +15,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message } = await req.json();
+    const { message, conversationHistory = [] } = await req.json();
     
     if (!message || typeof message !== 'string') {
       throw new Error('Message is required and must be a string');
@@ -26,6 +26,13 @@ serve(async (req) => {
     }
 
     console.log('Received message:', message);
+    console.log('Conversation history length:', conversationHistory.length);
+    console.log('OpenAI API Key available:', !!openAIApiKey);
+    console.log('OpenAI API Key length:', openAIApiKey?.length || 0);
+
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key is not configured');
+    }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -34,7 +41,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5-2025-08-07',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system', 
@@ -68,6 +75,12 @@ serve(async (req) => {
    - Leave opportunities for the student to attempt the next step
    - Only provide complete solutions after the student has made genuine effort
 
+6. **Maintain Context:**
+   - Reference previous parts of the conversation when relevant
+   - Build on what the student has already learned or attempted
+   - Connect new concepts to previously discussed material
+
+
 **FORMATTING RULES:**
 
 1. **Separate text from math clearly:**
@@ -89,9 +102,14 @@ What do you notice about the coefficients? Do you think this might factor nicely
 
 Always guide students toward understanding rather than just providing answers.`
           },
+          // Include conversation history
+          ...conversationHistory.map((msg: any) => ({
+            role: msg.sender === 'user' ? 'user' : 'assistant',
+            content: msg.content
+          })),
           { 
             role: 'user', 
-            content: message 
+            content: message
           }
         ],
         max_completion_tokens: 1000,
@@ -105,11 +123,22 @@ Always guide students toward understanding rather than just providing answers.`
     }
 
     const data = await response.json();
-    console.log('OpenAI response received');
+    console.log('OpenAI response received:', JSON.stringify(data, null, 2));
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Invalid OpenAI response structure:', data);
+      throw new Error('Invalid response structure from OpenAI');
+    }
     
     const aiResponse = data.choices[0].message.content;
+    console.log('AI response content:', aiResponse);
+    console.log('AI response content length:', aiResponse?.length || 0);
+    console.log('AI response content type:', typeof aiResponse);
+    
+    const responseData = { response: aiResponse };
+    console.log('Returning response data:', JSON.stringify(responseData, null, 2));
 
-    return new Response(JSON.stringify({ response: aiResponse }), {
+    return new Response(JSON.stringify(responseData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {

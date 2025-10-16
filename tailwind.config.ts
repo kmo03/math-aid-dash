@@ -13,6 +13,9 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Poppins', 'system-ui', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -66,11 +69,32 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Universably brand colors
+        navy: {
+          50: '#f0f4ff',
+          100: '#e0e9ff',
+          200: '#c7d7ff',
+          300: '#a5b8ff',
+          400: '#8190ff',
+          500: '#6366f1',
+          600: '#4f46e5',
+          700: '#4338ca',
+          800: '#3730a3',
+          900: '#1e1b4b',
+          950: '#0f0b2e',
+        },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg: "1rem", // 16px - more rounded
+        md: "0.75rem", // 12px
+        sm: "0.5rem", // 8px
+        xl: "1.5rem", // 24px - extra rounded
+        "2xl": "2rem", // 32px - very rounded
+      },
+      borderWidth: {
+        '0.5': '0.5px',
+        '1': '1px',
+        '2': '2px',
       },
       backgroundImage: {
         "gradient-primary": "var(--gradient-primary)",
