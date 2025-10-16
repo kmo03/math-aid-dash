@@ -96,7 +96,8 @@ export function MathRenderer({ content, className }: MathRendererProps) {
         processedContent = processedContent.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
         // Italic text
         processedContent = processedContent.replace(/\*(.*?)\*/g, '<em>$1</em>');
-        // Headers (process before newline conversion)
+        
+        // Handle headers (keep them aligned)
         processedContent = processedContent.replace(/### (.*?)(?=\n|$)/g, '<h3 style="font-size: 1.125rem; font-weight: 600; margin: 1rem 0 0.5rem 0;">$1</h3>');
         processedContent = processedContent.replace(/## (.*?)(?=\n|$)/g, '<h2 style="font-size: 1.25rem; font-weight: 600; margin: 1rem 0 0.5rem 0;">$1</h2>');
         processedContent = processedContent.replace(/# (.*?)(?=\n|$)/g, '<h1 style="font-size: 1.5rem; font-weight: 700; margin: 1rem 0 0.5rem 0;">$1</h1>');

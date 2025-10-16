@@ -71,7 +71,7 @@ export function ChatGPTIntegration() {
       const openAIMessages = [
         {
           role: 'system' as const,
-          content: `You are an enthusiastic and patient AI math tutor named Universably. Your goal is to help students understand mathematics through:
+          content: `You are a helpful AI math tutor named Universably. Keep your responses brief and conversational.
 
 1. **Conversational tone**: Speak like a friendly teacher, using "we" and "you" naturally
 2. **Analogies and real-world examples**: Connect math concepts to everyday life
@@ -80,14 +80,17 @@ export function ChatGPTIntegration() {
 5. **Questions**: Ask guiding questions to help students discover answers
 6. **Visual thinking**: Describe what's happening in a way students can "see" the math
 
-**FORMATTING RULES:**
-Use simple formatting for clear, readable responses:
+**FORMATTING:**
+- Use **bold** for key terms
+- Use *italics* for emphasis
+- Use $math$ for equations
+- Use ## for main sections only when necessary
+- Responses under headings should be indented
 
-- Headers: Use ## for main sections (## Step 1:, ## Solution:, ## Key Concept:)
-- Bold text: Use **bold text** for important terms and concepts
-- Italics: Use *italic text* for emphasis
-- Math: Use $inline math$ and $$display math$$ as usual
-- Line breaks: Use double line breaks for paragraphs
+**Examples of good responses:**
+- "The derivative of x² is 2x. Think of it as how fast x² is changing."
+- "First, factor this: x² + 5x - 6 = (x + 6)(x - 1) = 0, so x = -6 or x = 1."
+- "A triangle's angles always add up to 180°. So if you know two angles, just subtract from 180°."
 
 **Examples:**
 - "## Step 1: Understanding the Problem"
@@ -114,7 +117,7 @@ Keep formatting simple and focus on clear explanations!`
       let completion;
       try {
         completion = await openai.chat.completions.create({
-          model: 'gpt-5',
+          model: 'gpt-4o',
           messages: openAIMessages,
           max_completion_tokens: 4000,
         });
@@ -224,7 +227,7 @@ Keep formatting simple and focus on clear explanations!`
                   <Button
                     key={index}
                     variant="outline"
-                    className="h-auto min-h-[120px] p-6 text-center justify-center rounded-xl border-0.5 border-black hover:bg-accent/50"
+                    className="h-auto min-h-[120px] p-6 text-center justify-center rounded-xl border-0.5 border-gray-300 hover:bg-accent/50"
                     onClick={() => setInputValue(prompt.text + (prompt.math ? ` ${prompt.math}` : ''))}
                   >
                     <div className="w-full text-wrap">
@@ -242,42 +245,48 @@ Keep formatting simple and focus on clear explanations!`
         </div>
       ) : (
         /* Chat Messages */
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
-            >
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-4xl mx-auto space-y-8">
+            {messages.map((message) => (
               <div
-                className={`max-w-[80%] p-4 rounded-lg ${
-                  message.sender === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-foreground"
-                }`}
+                key={message.id}
+                className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
               >
-                {message.sender === "ai" ? (
-                  <MathRenderer 
-                    content={message.content}
-                    className="text-sm leading-relaxed"
-                  />
-                ) : (
-                  <p className="text-sm leading-relaxed">{message.content}</p>
-                )}
-              </div>
-            </div>
-          ))}
-          
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-muted p-4 rounded-lg">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse"></div>
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse delay-100"></div>
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse delay-200"></div>
+                <div
+                  className={`w-full ${
+                    message.sender === "user"
+                      ? "bg-primary text-primary-foreground px-6 py-3 rounded-full max-w-md ml-auto"
+                      : "bg-transparent text-foreground"
+                  }`}
+                >
+                  {message.sender === "ai" ? (
+                    <div className="text-left">
+                      <MathRenderer 
+                        content={message.content}
+                        className="text-base leading-relaxed"
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-sm leading-relaxed">{message.content}</p>
+                  )}
                 </div>
               </div>
-            </div>
-          )}
+            ))}
+            
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="w-full">
+                  <div className="bg-muted/50 px-6 py-3 rounded-full inline-block">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse"></div>
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse delay-100"></div>
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse delay-200"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -295,7 +304,7 @@ Keep formatting simple and focus on clear explanations!`
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Ask anything"
-                    className="pr-20 min-h-[52px] py-4 text-base rounded-2xl border-0.5 border-black focus:border-primary/50 focus:ring-0"
+                    className="pr-20 min-h-[52px] py-4 text-base rounded-2xl border-0.5 border-gray-300 focus:border-primary/50 focus:ring-0"
                     disabled={isLoading}
                     maxLength={4000}
                   />
@@ -325,7 +334,7 @@ Keep formatting simple and focus on clear explanations!`
                         variant="outline"
                         size="sm"
                         onClick={handleExportConversation}
-                        className="text-xs rounded-xl border-0.5 border-black hover:bg-accent/50"
+                        className="text-xs rounded-xl border-0.5 border-gray-300 hover:bg-accent/50"
                       >
                         <Download className="w-3 h-3 mr-1" />
                         Export
@@ -334,7 +343,7 @@ Keep formatting simple and focus on clear explanations!`
                         variant="outline"
                         size="sm"
                         onClick={handleClearConversation}
-                        className="text-xs rounded-xl border-0.5 border-black hover:bg-accent/50"
+                        className="text-xs rounded-xl border-0.5 border-gray-300 hover:bg-accent/50"
                       >
                         <Trash2 className="w-3 h-3 mr-1" />
                         Clear
