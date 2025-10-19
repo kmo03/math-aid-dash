@@ -41,6 +41,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'gpt-4o',
+        stream: true,
         messages: [
           {
             role: 'system', 
@@ -101,7 +102,6 @@ What do you notice about the coefficients? Do you think this might factor nicely
 
 Always guide students toward understanding rather than just providing answers.`
           },
-          // Include conversation history
           ...conversationHistory.map((msg: any) => ({
             role: msg.sender === 'user' ? 'user' : 'assistant',
             content: msg.content
@@ -121,24 +121,15 @@ Always guide students toward understanding rather than just providing answers.`
       throw new Error(`OpenAI API error: ${response.status}`);
     }
 
-    const data = await response.json();
-    console.log('OpenAI response received:', JSON.stringify(data, null, 2));
-    
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error('Invalid OpenAI response structure:', data);
-      throw new Error('Invalid response structure from OpenAI');
-    }
-    
-    const aiResponse = data.choices[0].message.content;
-    console.log('AI response content:', aiResponse);
-    console.log('AI response content length:', aiResponse?.length || 0);
-    console.log('AI response content type:', typeof aiResponse);
-    
-    const responseData = { response: aiResponse };
-    console.log('Returning response data:', JSON.stringify(responseData, null, 2));
+    console.log('Streaming response from OpenAI');
 
-    return new Response(JSON.stringify(responseData), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    return new Response(response.body, {
+      headers: { 
+        ...corsHeaders, 
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive'
+      },
     });
   } catch (error) {
     console.error('Error in chat-gpt function:', error);
