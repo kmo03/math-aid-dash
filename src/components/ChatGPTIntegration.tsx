@@ -8,7 +8,7 @@ import { MathPreview } from "./MathPreview";
 import { toast } from "@/hooks/use-toast";
 import { useConversation } from "@/hooks/useConversation";
 import { z } from "zod";
-import OpenAI from "openai";
+import { supabase } from "@/integrations/supabase/client";
 
 const messageSchema = z.object({
   message: z.string()
@@ -17,11 +17,6 @@ const messageSchema = z.object({
     .max(4000, { message: "Message must be less than 4000 characters" })
 });
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true, // Only for client-side usage
-});
 
 export function ChatGPTIntegration() {
   const { 
@@ -60,100 +55,30 @@ export function ChatGPTIntegration() {
     setIsLoading(true);
 
     try {
-      console.log('Calling OpenAI API with message:', messageToSend);
+      console.log('Calling edge function with message:', messageToSend);
       
-      // Check if API key is configured
-      if (!import.meta.env.VITE_OPENAI_API_KEY) {
-        throw new Error('OpenAI API key is not configured. Please set VITE_OPENAI_API_KEY in your environment variables.');
-      }
-      
-      // Prepare messages for OpenAI API
-      const openAIMessages = [
-        {
-          role: 'system' as const,
-          content: `You are a helpful AI math tutor named Universably. Keep your responses brief and conversational.
-
-1. **Conversational tone**: Speak like a friendly teacher, using "we" and "you" naturally
-2. **Analogies and real-world examples**: Connect math concepts to everyday life
-3. **Step-by-step breakdown**: Always break down problems into clear, manageable steps
-4. **Encouragement**: Be supportive and celebrate small victories
-5. **Questions**: Ask guiding questions to help students discover answers
-6. **Visual thinking**: Describe what's happening in a way students can "see" the math
-
-**FORMATTING:**
-- Use **bold** for key terms
-- Use *italics* for emphasis
-- Use $math$ for equations
-- Use ## for main sections only when necessary
-- Responses under headings should be indented
-
-**Examples of good responses:**
-- "The derivative of x² is 2x. Think of it as how fast x² is changing."
-- "First, factor this: x² + 5x - 6 = (x + 6)(x - 1) = 0, so x = -6 or x = 1."
-- "A triangle's angles always add up to 180°. So if you know two angles, just subtract from 180°."
-
-**Examples:**
-- "## Step 1: Understanding the Problem"
-- "**Key Concept:** The derivative tells us the slope..."
-- "Let's break this down: *First*, we identify what we're looking for..."
-
-Keep formatting simple and focus on clear explanations!`
-        },
-        // Add conversation history
-        ...messages.map(msg => ({
-          role: msg.sender === 'user' ? 'user' as const : 'assistant' as const,
-          content: msg.content
-        })),
-        // Add current user message
-        {
-          role: 'user' as const,
-          content: messageToSend
+      // Call the edge function
+      const { data, error } = await supabase.functions.invoke('chat-gpt', {
+        body: { 
+          message: messageToSend,
+          conversationHistory: messages
         }
-      ];
+      });
 
-      console.log('Sending request to OpenAI with model: gpt-5');
-      console.log('Messages:', openAIMessages);
-      
-      let completion;
-      try {
-        completion = await openai.chat.completions.create({
-          model: 'gpt-4o',
-          messages: openAIMessages,
-          max_completion_tokens: 4000,
-        });
-      } catch (gpt5Error) {
-        console.warn('GPT-5 failed, falling back to GPT-4o:', gpt5Error);
-        completion = await openai.chat.completions.create({
-          model: 'gpt-4o',
-          messages: openAIMessages,
-          max_tokens: 1000,
-          temperature: 0.7,
-        });
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
       }
 
-      console.log('OpenAI completion response:', completion);
-      console.log('Choices array:', completion.choices);
-      console.log('First choice:', completion.choices[0]);
+      console.log('Edge function response:', data);
       
-      const aiResponse = completion.choices[0]?.message?.content;
-      const finishReason = completion.choices[0]?.finish_reason;
+      const aiResponse = data?.response;
       
       if (!aiResponse) {
-        console.error('No response content in completion:', completion);
-        console.error('Choices structure:', completion.choices.map(choice => ({
-          index: choice.index,
-          message: choice.message,
-          finish_reason: choice.finish_reason
-        })));
-        
-        if (finishReason === 'length') {
-          throw new Error('Response was cut off due to token limit. Try asking a shorter question or the model may need more tokens allocated.');
-        } else {
-          throw new Error('No response received from OpenAI');
-        }
+        throw new Error('No response received from AI');
       }
 
-      console.log('OpenAI response received:', aiResponse);
+      console.log('AI response received:', aiResponse);
       
       const aiMessage = {
         id: (Date.now() + 1).toString(),
