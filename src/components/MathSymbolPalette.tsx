@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calculator, Plus, Minus, X, Divide, Equal, Pi, Sum, Integral, SquareRoot, Alpha, Beta, Gamma, Delta } from 'lucide-react';
+import { Calculator } from 'lucide-react';
 import { MathRenderer } from './MathRenderer';
 
 interface MathSymbolPaletteProps {
