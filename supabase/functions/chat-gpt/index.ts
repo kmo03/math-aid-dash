@@ -1,7 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -27,21 +27,20 @@ serve(async (req) => {
 
     console.log('Received message:', message);
     console.log('Conversation history length:', conversationHistory.length);
-    console.log('OpenAI API Key available:', !!openAIApiKey);
-    console.log('OpenAI API Key length:', openAIApiKey?.length || 0);
+    console.log('Lovable API Key available:', !!lovableApiKey);
 
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key is not configured');
+    if (!lovableApiKey) {
+      throw new Error('Lovable API key is not configured');
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'google/gemini-2.5-flash',
         messages: [
           {
             role: 'system', 
@@ -118,16 +117,24 @@ Always guide students toward understanding rather than just providing answers.`
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('OpenAI API error:', response.status, errorData);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      console.error('Lovable AI Gateway error:', response.status, errorData);
+      
+      if (response.status === 429) {
+        throw new Error('Rate limit exceeded. Please try again later.');
+      }
+      if (response.status === 402) {
+        throw new Error('Payment required. Please add credits to your Lovable workspace.');
+      }
+      
+      throw new Error(`AI Gateway error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('OpenAI response received:', JSON.stringify(data, null, 2));
+    console.log('AI response received:', JSON.stringify(data, null, 2));
     
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error('Invalid OpenAI response structure:', data);
-      throw new Error('Invalid response structure from OpenAI');
+      console.error('Invalid AI response structure:', data);
+      throw new Error('Invalid response structure from AI');
     }
     
     const aiResponse = data.choices[0].message.content;
