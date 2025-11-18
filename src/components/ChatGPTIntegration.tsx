@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send } from "lucide-react";
+import { Send, Mic, Paperclip, Download, Trash2 } from "lucide-react";
 import { MathRenderer } from "./MathRenderer";
 import { MathSymbolPalette } from "./MathSymbolPalette";
 import { MathPreview } from "./MathPreview";
@@ -135,92 +135,156 @@ export function ChatGPTIntegration() {
   };
 
   return (
-    <div className="flex flex-col h-screen max-w-3xl mx-auto">
-      {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-8 space-y-8">
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full">
-            <div className="text-center mb-12">
-              <h2 className="text-lg font-medium text-foreground mb-2">
-                Ask anything
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Math, physics, or computer science
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-xl">
+    <div className="flex-1 flex flex-col">
+      {/* Welcome message when no chats */}
+      {messages.length === 0 ? (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center max-w-md">
+            <h1 className="text-3xl font-semibold text-foreground mb-2">
+              Where should we begin?
+            </h1>
+            <p className="text-muted-foreground mb-6 text-lg">
+              I'm here to help you with your math homework. Ask me about algebra, calculus, geometry, or any other math topic!
+            </p>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
               {getWelcomePrompts().map((prompt, index) => (
-                <button
-                  key={index}
-                  onClick={() => setInputValue(prompt.text + (prompt.math ? `: ${prompt.math}` : ''))}
-                  className="p-3 text-left border border-border/20 hover:border-border/40 transition-colors text-sm"
-                >
-                  <p className="text-foreground">{prompt.text}</p>
-                  {prompt.math && (
-                    <div className="mt-2 text-muted-foreground">
-                      <MathRenderer content={`$${prompt.math}$`} />
+                  <Button
+                    key={index}
+                    variant="outline"
+                    className="h-auto min-h-[120px] p-6 text-center justify-center rounded-xl border-0.5 border-gray-300 hover:bg-accent/50"
+                    onClick={() => setInputValue(prompt.text + (prompt.math ? ` ${prompt.math}` : ''))}
+                  >
+                    <div className="w-full text-wrap">
+                      <div className="font-medium text-sm mb-2 break-words">{prompt.text}</div>
+                      {prompt.math && (
+                        <div className="text-xs text-muted-foreground">
+                          <MathRenderer content={prompt.math} className="text-xs" />
+                        </div>
+                      )}
                     </div>
-                  )}
-                </button>
+                  </Button>
               ))}
             </div>
           </div>
-        ) : (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${
-                message.sender === "user" ? "justify-end" : "justify-start"
-              }`}
-            >
+        </div>
+      ) : (
+        /* Chat Messages */
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-4xl mx-auto space-y-8">
+            {messages.map((message) => (
               <div
-                className={`max-w-[75%] px-4 py-2 text-sm ${
-                  message.sender === "user"
-                    ? "bg-foreground text-background"
-                    : "text-foreground"
-                }`}
+                key={message.id}
+                className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
               >
-                <MathRenderer content={message.content} />
+                <div
+                  className={`w-full ${
+                    message.sender === "user"
+                      ? "bg-primary text-primary-foreground px-6 py-3 rounded-full max-w-md ml-auto"
+                      : "bg-transparent text-foreground"
+                  }`}
+                >
+                  {message.sender === "ai" ? (
+                    <div className="text-left">
+                      <MathRenderer 
+                        content={message.content}
+                        className="text-base leading-relaxed"
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-sm leading-relaxed">{message.content}</p>
+                  )}
+                </div>
               </div>
-            </div>
-          ))
-        )}
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="max-w-[75%] px-4 py-2">
-              <div className="flex gap-1">
-                <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce"></div>
+            ))}
+            
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="w-full">
+                  <div className="bg-muted/50 px-6 py-3 rounded-full inline-block">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse"></div>
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse delay-100"></div>
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse delay-200"></div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Input Area */}
-      <div className="border-t border-border/10 p-6">
-        <MathSymbolPalette onSymbolClick={handleSymbolClick} />
-        <MathPreview content={inputValue} />
-        <div className="flex gap-3 items-end">
-          <div className="flex-1">
-            <Input
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder="Ask a question..."
-              className="border-border/20 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-border/40"
-              disabled={isLoading}
-            />
+      <div className="sticky bottom-0 bg-background">
+        <div className="p-2">
+          <div className="max-w-4xl mx-auto">
+            {/* Math Preview */}
+            <MathPreview content={inputValue} className="mb-1" />
+            
+            <div className="flex items-end space-x-3">
+                <div className="flex-1 relative">
+                  <Input
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Ask anything"
+                    className="pr-20 min-h-[52px] py-4 text-base rounded-2xl border-0.5 border-gray-300 focus:border-primary/50 focus:ring-0"
+                    disabled={isLoading}
+                    maxLength={4000}
+                  />
+                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-1">
+                    <MathSymbolPalette onSymbolClick={handleSymbolClick} />
+                    <Button variant="ghost" size="icon" className="w-8 h-8">
+                      <Paperclip className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      onClick={handleSendMessage}
+                      disabled={!inputValue.trim() || isLoading}
+                      size="icon"
+                      className="w-8 h-8 rounded-full"
+                    >
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+            </div>
+            
+              {/* Action buttons */}
+              <div className="flex justify-between items-center mt-3">
+                <div className="flex space-x-2">
+                  {messages.length > 0 && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleExportConversation}
+                        className="text-xs rounded-xl border-0.5 border-gray-300 hover:bg-accent/50"
+                      >
+                        <Download className="w-3 h-3 mr-1" />
+                        Export
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleClearConversation}
+                        className="text-xs rounded-xl border-0.5 border-gray-300 hover:bg-accent/50"
+                      >
+                        <Trash2 className="w-3 h-3 mr-1" />
+                        Clear
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              {/* Centered disclaimer */}
+              <div className="flex justify-center mt-1">
+                <p className="text-xs text-muted-foreground">
+                  Universably can make mistakes. Check important info.
+                </p>
+              </div>
           </div>
-          <Button
-            onClick={handleSendMessage}
-            disabled={!inputValue.trim() || isLoading}
-            size="icon"
-            className="h-10 w-10"
-          >
-            <Send className="w-4 h-4" />
-          </Button>
         </div>
       </div>
     </div>

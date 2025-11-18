@@ -8,9 +8,9 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Minimalist color scheme */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
+    /* Universably color scheme - Black, White, Dark Navy Blue */
+    --background: 0 0% 100%; /* Pure white */
+    --foreground: 0 0% 0%; /* Pure black */
 
     --card: 0 0% 100%;
     --card-foreground: 0 0% 0%;
@@ -18,18 +18,18 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 0%;
 
-    --primary: 0 0% 0%;
+    --primary: 231 100% 66%; /* #5271ff blue */
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 0 0% 20%;
+    --primary-glow: 231 100% 76%;
 
-    --secondary: 0 0% 96%;
+    --secondary: 240 4% 95%;
     --secondary-foreground: 0 0% 0%;
 
-    --muted: 0 0% 98%;
-    --muted-foreground: 0 0% 50%;
+    --muted: 240 4% 95%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 0 0% 96%;
-    --accent-foreground: 0 0% 0%;
+    --accent: 240 4% 90%;
+    --accent-foreground: 231 100% 66%;
 
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
@@ -40,25 +40,25 @@ All colors MUST be HSL.
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 0 0% 0%;
+    --border: 0 0% 0%; /* Solid black borders */
+    --input: 0 0% 0%; /* Solid black input borders */
+    --ring: 231 100% 66%;
 
-    /* Minimal gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(0 0% 0%), hsl(0 0% 20%));
-    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(0 0% 99%));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(0 0% 99%));
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(240 4% 98%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(240 4% 99%));
 
-    /* Minimal shadows */
-    --shadow-card: 0 1px 3px 0 hsl(0 0% 0% / 0.03);
-    --shadow-hover: 0 2px 6px 0 hsl(0 0% 0% / 0.05);
-    --shadow-glow: 0 0 0 0 transparent;
+    /* Shadows */
+    --shadow-card: 0 2px 8px -2px hsl(0 0% 0% / 0.05);
+    --shadow-hover: 0 4px 12px -3px hsl(0 0% 0% / 0.1);
+    --shadow-glow: 0 0 30px -10px hsl(var(--primary) / 0.2);
 
     /* Animation */
-    --transition-smooth: all 0.2s ease;
-    --transition-spring: all 0.3s ease;
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
-    --radius: 0; /* No rounded corners */
+    --radius: 1rem; /* More rounded corners */
 
     --sidebar-background: 240 4% 98%;
 
